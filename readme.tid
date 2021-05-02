@@ -1,0 +1,3 @@
+title: $:/plugins/tw5-nedb/readme
+
+This plugin is an extended syncer of filesystem plugin that save normal tiddlers into NeDB instead of files.

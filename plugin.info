@@ -1,0 +1,6 @@
+{
+  "title": "$:/plugins/tw5-nedb",
+  "name": "NeDB Syncer",
+  "description": "Synchronize changes from the node.js server to the local filesystem and NeDB",
+  "list": "readme"
+}
