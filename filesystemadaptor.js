@@ -1,7 +1,8 @@
 /*\
-title: $:/plugins/tw5-nedb/nedbadaptor.js
+title: $:/plugins/tiddlywiki/filesystem/filesystemadaptor.js
 type: application/javascript
 module-type: syncadaptor
+
 A sync adaptor module for synchronising with the local filesystem via node.js APIs
 
 [[SyncAdaptorModules|https://tiddlywiki.com/dev/static/SyncAdaptorModules.html]]
@@ -15,16 +16,13 @@ A sync adaptor module for synchronising with the local filesystem via node.js AP
 
   // Get a reference to the file system
   if ($tw.node) {
-    var fs = require('fs'),
-      path = require("path"),
+    var path = require("path"),
       Datastore = require('nedb');
   }
 
   function isSystemTiddler(arg) {
-    var title = "";
-    if (typeof arg === "string") {
-      title = arg;
-    } else {
+    var title = arg;
+    if (typeof arg === "object") {
       title = arg.fields.title;
     }
     return /^\$:/.test(title);
@@ -39,9 +37,10 @@ A sync adaptor module for synchronising with the local filesystem via node.js AP
     var self = this;
     this.wiki = options.wiki;
     this.boot = options.boot || $tw.boot;
-    this.logger = new $tw.utils.Logger("nedb",{colour: "blue"});
+    this.logger = new $tw.utils.Logger("filesystem",{colour: "green"});
     // Create the <wiki>/tiddlers folder if it doesn't exist
     $tw.utils.createDirectory(this.boot.wikiTiddlersPath);
+    // Create the <wiki>/tiddlers/tiddlers.db
     this.db = new Datastore({
       filename: path.join(this.boot.wikiTiddlersPath, "tiddlers.db"),
       autoload: true,
@@ -50,7 +49,7 @@ A sync adaptor module for synchronising with the local filesystem via node.js AP
     this.db.persistence.setAutocompactionInterval(600 * 1000);
   }
 
-  NeDbAdaptor.prototype.name = "tw5-nedb";
+  NeDbAdaptor.prototype.name = "filesystem";
   NeDbAdaptor.prototype.supportsLazyLoading = false;
 
   NeDbAdaptor.prototype.isReady = function() {
@@ -76,66 +75,6 @@ A sync adaptor module for synchronising with the local filesystem via node.js AP
   };
 
   /**
-   * Gets the revision ID associated with the specified tiddler title.
-   * 
-   * @param {string} title Tiddler title
-   * @returns revision ID.
-   */
-  //NeDbAdaptor.prototype.getTiddlerRevision = function(title) {}
-
-  /**
-   * Attempts to login to the server with specified credentials. This method is optional.
-   * 
-   * @param {string} username 
-   * @param {string} password 
-   * @param {Function} callback Callback function invoked with parameter `err`
-   */
-  //NeDbAdaptor.prototype.login = function(username,password,callback) {}
-
-  /**
-   * Invoked by the syncer to display a custom login promopt. This method is optional.
-   * The custom login prompt should send the widget message tm-login with the username and password in parameters username and password.
-   * 
-   * @param {object} syncer Reference to the syncer object making the call
-   */
-  //NeDbAdaptor.prototype.displayLoginPrompt = function(syncer) {}
-
-  /**
-   * Attempts to logout of the server. This method is optional.
-   * 
-   * @param {Function} callback function invoked with parameter `err`
-   */
-  //NeDbAdaptor.prototype.logout = function(callback) {}
-
-  /**
-   * Retrieves the titles of tiddlers that need to be updated from the server.
-   * This method is optional. If an adaptor doesn't implement it then synchronisation will be unidirectional from the TiddlyWiki store to the adaptor,
-   * but not the other way.
-   * The syncer will use the getUpdatedTiddlers() method in preference to the getSkinnyTiddlers() method.
-   * 
-   * The data provided by the callback is as follows:
-   * 
-   * {
-   *   modifications: [<array of title>],
-   *   deletions: [<array of title>],
-   * }
-   * @param {*} syncer Reference to the syncer object making the call
-   * @param {*} callback  function invoked with parameter err,data – see below
-   */
-  //NeDbAdaptor.prototype.getUpdatedTiddlers = function(syncer,callback) {}
-
-  /**
-   * Retrieves a list of skinny tiddlers from the server.
-   * This method is optional. If an adaptor doesn't implement
-   * it then synchronisation will be unidirectional from the
-   * TiddlyWiki store to the adaptor, but not the other way.
-   * The syncer will use the getUpdatedTiddlers() method in preference to the getSkinnyTiddlers() method.
-   * 
-   * @param {*} callback function invoked with parameter err,tiddlers, where tiddlers is an array of tiddler field objects
-   */
-  //NeDbAdaptor.prototype.getSkinnyTiddlers = function(callback) {}
-
-  /**
    * Return a fileInfo object for a tiddler, creating it if necessary:
    *   filepath: the absolute path to the file containing the tiddler
    *   type: the type of the tiddler file (NOT the type of the tiddler -- see below)
@@ -148,7 +87,7 @@ A sync adaptor module for synchronising with the local filesystem via node.js AP
    * @param {*} tiddler 
    * @param {*} callback 
    */
-   NeDbAdaptor.prototype.getTiddlerFileInfo = function(tiddler,callback) {
+  NeDbAdaptor.prototype.getTiddlerFileInfo = function(tiddler,callback) {
     // Always generate a fileInfo object when this fuction is called
     var title = tiddler.fields.title, newInfo, pathFilters, extFilters,
      fileInfo = this.boot.files[title];
@@ -175,7 +114,7 @@ A sync adaptor module for synchronising with the local filesystem via node.js AP
    * @param {*} callback function invoked with parameter err,adaptorInfo,revision
    * @param {*} tiddlerInfo The tiddlerInfo maintained by the syncer for this tiddler
    */
-   NeDbAdaptor.prototype.saveTiddler = function(tiddler,callback,options) {
+  NeDbAdaptor.prototype.saveTiddler = function(tiddler,callback,options) {
     var self = this;
     var syncerInfo = options.tiddlerInfo || {};
     this.getTiddlerFileInfo(tiddler,function(err,fileInfo) {
@@ -253,6 +192,66 @@ A sync adaptor module for synchronising with the local filesystem via node.js AP
       callback(null,null);
     }
   };
+
+  /**
+   * Gets the revision ID associated with the specified tiddler title.
+   * 
+   * @param {string} title Tiddler title
+   * @returns revision ID.
+   */
+  //NeDbAdaptor.prototype.getTiddlerRevision = function(title) {}
+
+  /**
+   * Attempts to login to the server with specified credentials. This method is optional.
+   * 
+   * @param {string} username 
+   * @param {string} password 
+   * @param {Function} callback Callback function invoked with parameter `err`
+   */
+  //NeDbAdaptor.prototype.login = function(username,password,callback) {}
+
+  /**
+   * Invoked by the syncer to display a custom login promopt. This method is optional.
+   * The custom login prompt should send the widget message tm-login with the username and password in parameters username and password.
+   * 
+   * @param {object} syncer Reference to the syncer object making the call
+   */
+  //NeDbAdaptor.prototype.displayLoginPrompt = function(syncer) {}
+
+  /**
+   * Attempts to logout of the server. This method is optional.
+   * 
+   * @param {Function} callback function invoked with parameter `err`
+   */
+  //NeDbAdaptor.prototype.logout = function(callback) {}
+
+  /**
+   * Retrieves the titles of tiddlers that need to be updated from the server.
+   * This method is optional. If an adaptor doesn't implement it then synchronisation will be unidirectional from the TiddlyWiki store to the adaptor,
+   * but not the other way.
+   * The syncer will use the getUpdatedTiddlers() method in preference to the getSkinnyTiddlers() method.
+   * 
+   * The data provided by the callback is as follows:
+   * 
+   * {
+   *   modifications: [<array of title>],
+   *   deletions: [<array of title>],
+   * }
+   * @param {*} syncer Reference to the syncer object making the call
+   * @param {*} callback  function invoked with parameter err,data – see below
+   */
+  //NeDbAdaptor.prototype.getUpdatedTiddlers = function(syncer,callback) {}
+
+  /**
+   * Retrieves a list of skinny tiddlers from the server.
+   * This method is optional. If an adaptor doesn't implement
+   * it then synchronisation will be unidirectional from the
+   * TiddlyWiki store to the adaptor, but not the other way.
+   * The syncer will use the getUpdatedTiddlers() method in preference to the getSkinnyTiddlers() method.
+   * 
+   * @param {*} callback function invoked with parameter err,tiddlers, where tiddlers is an array of tiddler field objects
+   */
+  //NeDbAdaptor.prototype.getSkinnyTiddlers = function(callback) {}
 
   if($tw.node) {
     exports.adaptorClass = NeDbAdaptor;

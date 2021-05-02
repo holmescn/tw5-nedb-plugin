@@ -1,3 +1,5 @@
-title: $:/plugins/tw5-nedb/readme
+title: $:/plugins/tiddlywiki/filesystem/readme
 
-This plugin is an extended syncer of filesystem plugin that save normal tiddlers into NeDB instead of files.
+The filesystem plugin is used under Node.js to synchronise tiddler changes back to the file system. It is inert when used in the browser.
+
+[[Source code|https://github.com/Jermolene/TiddlyWiki5/blob/master/plugins/tiddlywiki/filesystem]]
