@@ -147,7 +147,7 @@ A sync adaptor module for synchronising with the local filesystem via node.js AP
           self.memcache[title] = tiddler.fields;
           return callback(null,fileInfo);
         } else {
-          $tw.utils.saveTiddlerToFile(tiddler,fileInfo,function(err,fileInfo) {
+          $tw.utils.saveTiddlerToFile(tiddler,fileInfo,function(err,fileInfo_1) {
             if(err) {
               if ((err.code == "EPERM" || err.code == "EACCES") && err.syscall == "open") {
                 fileInfo = fileInfo || self.boot.files[tiddler.fields.title];
@@ -167,7 +167,7 @@ A sync adaptor module for synchronising with the local filesystem via node.js AP
               bootInfo: fileInfo || {},
               title: tiddler.fields.title
             };
-            $tw.utils.cleanupTiddlerFiles(options,function(err,fileInfo) {
+            $tw.utils.cleanupTiddlerFiles(options,function(err,fileInfo_2) {
               if(err) {
                 return callback(err);
               }
